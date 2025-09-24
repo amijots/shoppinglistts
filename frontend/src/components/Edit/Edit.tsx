@@ -8,7 +8,19 @@ import Row from 'react-bootstrap/Row';
 import axios from 'axios';
 import edit from '../../assets/icons8-edit-24.png';
 
-function Edit({listId, item, handleUpdateItem}) {
+interface ListItem {
+  name: string;
+  quantity: number;
+  pinned: boolean;
+  completed: boolean;
+  _id: string;
+}
+interface ListProps {
+  listId: string|undefined;
+  item: ListItem;
+  handleUpdateItem: (item: ListItem) => void;
+}
+function Edit({listId, item, handleUpdateItem}: ListProps) {
     const [show, setShow] = useState(false);
     const [checkedValue, setCheckedValue] = useState(item.pinned);
     const [inputValue, setInputValue] = useState(item.name);

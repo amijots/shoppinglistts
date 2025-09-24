@@ -1,18 +1,32 @@
 import ListGroup from 'react-bootstrap/ListGroup';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import Edit from '../Edit/Edit';
+import Edit from '../Edit/Edit.js';
 import Badge from 'react-bootstrap/Badge';
 import pinned from '../../assets/icons8-pin-24.png';
 import trash from '../../assets/icons8-trash-24.png';
 import {useState} from 'react'
 import axios from 'axios';
 
-function List({listId, item, deleteItem, handleUpdateItem}) {
+interface ListItem {
+  name: string;
+  quantity: number;
+  pinned: boolean;
+  completed: boolean;
+  _id: string;
+}
+interface ListProps {
+  listId: string|undefined;
+  item: ListItem;
+  deleteItem: (itemId:string) => void;
+  handleUpdateItem: (item: ListItem) => void;
+}
+
+function List({listId, item, deleteItem, handleUpdateItem}: ListProps) {
   const apiUrl = import.meta.env.VITE_API_URL;
   const [checkedValue, setCheckedValue] = useState(item.completed);
   
-  const handleChecked = async (e) => {
+  const handleChecked = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setCheckedValue(e.target.checked);
     await axios.put(apiUrl, {
         listId:listId,
@@ -23,10 +37,7 @@ function List({listId, item, deleteItem, handleUpdateItem}) {
         completed:e.target.checked
     }).then(response => {
         // THIS APPROACH DOESN'T SAVE THE ITEM'S MOST RECENT updatedAt ATTRIBUTE FOR CLIENT SIDE!
-        handleUpdateItem({
-            ...item,
-            completed: e.target.checked
-            });
+        handleUpdateItem({...item, completed: e.target.checked});
         // console.log(response.data.message);
       })
       .catch(error => {

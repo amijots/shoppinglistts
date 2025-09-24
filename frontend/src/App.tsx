@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Input from './components/Input/Input.jsx';
-import List from './components/List/List.jsx';
+import Input from './components/Input/Input';
+import List from './components/List/List';
 import Redirect from './components/Redirect/Redirect';
 import DeleteList from './components/DeleteList/DeleteList';
 import Container from 'react-bootstrap/Container';
@@ -30,22 +30,37 @@ const Main = () => {
 }
 
 function Checklist() {
+  interface ShoppingList {
+  listId: string;
+  listName: string; 
+  list: ListItem[];
+  }
+  interface ListItem {
+    name: string;
+    quantity: number;
+    pinned: boolean;
+    completed: boolean;
+    _id: string;
+  }
+
   const apiUrl = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
-  const {listId} = useParams(); //This works but then I need to change name of listId state variable
+  const {listId} = useParams<string>(); //This works but then I need to change name of listId state variable
   // const params = useParams();
   // const [listId, setlistId] = useState(params.listId);
-  const [items, setItems] = useState([]);
-  const [name, setName] = useState("");
-  const [pinnedItems, setPinned] = useState([]);
-  const [completedItems, setCompleted] = useState([]);
+  const [items, setItems] = useState<ListItem[]>([]);
+  const [name, setName] = useState<string>("");
+  const [pinnedItems, setPinned] = useState<ListItem[]>([]);
+  const [completedItems, setCompleted] = useState<ListItem[]>([]);
 
-  const addItem = (allItems) => {
-    let itemsList = [...items]
-    let pinnedList = [...pinnedItems]
-    let completedList = [...completedItems]
+  
+
+  const addItem = (allItems: ListItem[]) => {
+    let itemsList: ListItem[] = [...items]
+    let pinnedList: ListItem[] = [...pinnedItems]
+    let completedList: ListItem[] = [...completedItems]
     
-    allItems.forEach(item => {
+    allItems.forEach((item: ListItem) => {
       if (item.completed) {
         completedList.push(item);
       } else if (item.pinned) {
@@ -61,7 +76,7 @@ function Checklist() {
   }
   
   useEffect(() => {
-    axios.get(`${apiUrl}${listId}`)
+    axios.get<ShoppingList>(`${apiUrl}${listId}`)
       .then(response => {
         // console.log(response.data);
         setName(response.data.listName);
@@ -75,13 +90,13 @@ function Checklist() {
       });
   }, []);
 
-  const handleDeleteItem = (itemId) => {
+  const handleDeleteItem = (itemId: string) => {
     setItems(items.filter((t) => t._id !== itemId));
     setPinned(pinnedItems.filter((t) => t._id !== itemId));
     setCompleted(completedItems.filter((t) => t._id !== itemId));
   }
 
-  const handleUpdateItem = (item) => {
+  const handleUpdateItem = (item: ListItem) => {
     items.forEach((i) => {
       if (i._id === item._id) {
         // i have to do this since we can't mutate state directly :(
@@ -152,9 +167,9 @@ function Checklist() {
     // setCompleted(completedItems.map((i) => i._id === item._id ? item : i));
   }
 
-  const deleteItem = async (itemId) => {
+  const deleteItem = async (itemId:string) => {
     await axios.delete(`${apiUrl}${listId}/${itemId}`)
-      .then(response => {
+      .then(() => {
         // console.log(response.data.message);
         handleDeleteItem(itemId)
       })
@@ -177,7 +192,7 @@ function Checklist() {
   }
 
   // used to compare that the new name in the box is different than old name (trying to reduce PUT calls)
-  const [prevName, setPrevName] = useState("");
+  const [prevName, setPrevName] = useState<string>("");
   const saveListName = async () => {
     await axios.put(`${apiUrl}${listId}/${name}`)
       .then(response => {
@@ -191,20 +206,20 @@ function Checklist() {
 
   return (
     <>
-      <div style={{display: "flex", justifyContent: "space-between", flexDirection: "row"}} xs={12} md={10} >
+      <div style={{display: "flex", justifyContent: "space-between", flexDirection: "row"}}  >
         <h1><input
           className='blue-outline title-input'
           type="text"
-          value={name}
+          value={name || ""}
           placeholder="Untitled List"
           onChange={(e) => setName(e.target.value)}
-          onBlur={(name === "" ? () => setName(prevName) : (prevName !== name ? saveListName : null))}
+          onBlur={(name === "" ? () => setName(prevName) : (prevName !== name ? saveListName : () => {}))}
           style={{border:'none', color: name === "" ? '#666': 'black'}}
         /></h1>
         <DeleteList deleteList={deleteList}></DeleteList>
       </div>
 
-      <Input items={items} listId={listId} addItem={addItem}></Input>
+      <Input listId={listId} addItem={addItem}></Input>
       
       {/* I realized this makes a ListGroup for each item, vs making a ListGroup for pinnedItems, items, and completedItems */}
       <div className='items'>

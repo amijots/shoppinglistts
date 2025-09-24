@@ -27,7 +27,7 @@ router.post(
                     ]
                 })
                 await listDoc.save();
-                // console.log(listDoc);
+                console.log(listDoc);
                 return res.status(200).json({message: `${name} successfully added!`})
             }
 
@@ -40,7 +40,7 @@ router.post(
             listDoc.list.push({name, quantity, pinned})
             await listDoc.save();
             item = listDoc.list.find(item => item.name === name);
-            // console.log(listDoc);
+            console.log(listDoc);
             return res.status(201).json(item);
 
         } catch (err) {

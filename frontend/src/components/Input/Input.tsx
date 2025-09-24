@@ -11,36 +11,45 @@ import axios from 'axios';
 import pinned from '../../assets/icons8-pin-24.png';
 
 const apiUrl = import.meta.env.VITE_API_URL;
-function Input({listId, addItem}) {
+interface ListItem {
+  name: string;
+  quantity: number;
+  pinned: boolean;
+  completed: boolean;
+  _id: string;
+}
+interface InputProps {
+  listId: string|undefined;
+  addItem: (allItems: ListItem[]) => void;
+}
+
+function Input({ listId, addItem }: InputProps) {
   const [checkedValue, setCheckedValue] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [quantityValue, setQuantityValue] = useState(1);
 
-  const handleClick = async (event) => {
+  const handleClick = async () => {
     if (!inputValue || !quantityValue) {
       alert('Item\'s name or quantity is blank!')
       return;
     }
-    
-    const response = await axios.post(apiUrl, {
+
+    await axios.post<ListItem>(apiUrl, {
       listId:listId,
       name:inputValue,
-      quantity:quantityValue,
+      quantity:Number(quantityValue),
       pinned:checkedValue
+    }).then((response) => {
+      addItem([response.data]);
+      setCheckedValue(false);
+      setInputValue('');
+      setQuantityValue(1);
     }).catch(error => {
         // console.error('Error adding data to backend');
         alert(error.response.data.message);
         // alert(`Can't add item because ${error.response.data.message.toLowerCase()}`);
     });
-
-    // The standard way to catch null and undefined simultaneously
-    if (response != null) {
-      addItem([response.data]);
-      setCheckedValue(false);
-      setInputValue('');
-      setQuantityValue(1);
-    }
-    
+   
     
   };
   return (
@@ -60,7 +69,7 @@ function Input({listId, addItem}) {
                 style={{"borderTopLeftRadius": "5px","borderBottomLeftRadius": "5px"}}
                 onChange={(e) => setCheckedValue(e.currentTarget.checked)}
                 ><img src={pinned} />
-              </ToggleButton>
+              </ToggleButton> 
               {/* <InputGroup.Checkbox aria-label="Checkbox for pinning item" checked={checkedValue} onChange={(event) => setCheckedValue(event.target.checked)}/> */}
               <Form.Control type="text" placeholder="Item's name" className="w-50" value={inputValue} onChange={(event) => setInputValue(event.target.value)}/>
               <Form.Control type="number" id="typeNumber" min="1" placeholder="#" value={quantityValue} onChange={(event) => setQuantityValue(Number(event.target.value))}/>
