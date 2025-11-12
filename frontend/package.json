@@ -43,6 +43,6 @@
     "@rollup/rollup-linux-x64-gnu": "*"
   },
   "engines": {
-  "node": "18.x"
-}
+    "node": "22.x"
+  }
 }
